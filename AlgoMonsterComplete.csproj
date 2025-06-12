@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Patterns\FundamentalSorting\Examples\InsertionSortSolution.yml">
+    <None Update="Patterns\FundamentalSorting\InsertionSort.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

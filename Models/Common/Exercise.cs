@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AlgoMonsterComplete.Models.Common
 {
-    public class SolutionContent
+    public class Exercise
     {
         public string Title { get; set; }
         public string Description { get; set; }

@@ -1,6 +1,5 @@
 ﻿using AlgoMonsterComplete.Core;
 using AlgoMonsterComplete.Core.Interfaces;
-using AlgoMonsterComplete.Patterns.FundamentalSorting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -16,9 +15,9 @@ public class Program
 
         var host = CreateHostBuilder(args).Build();
 
-        var challengeRunner = host.Services.GetRequiredService<IChallengeRunner>();
+        var interactiveMenu = host.Services.GetRequiredService<IInteractiveMenu>();
 
-        await challengeRunner.RunAsync();
+        await interactiveMenu.RunAsync();
 
         await host.RunAsync();
     }
@@ -29,9 +28,5 @@ public class Program
             {
                 // Register core infrastructure
                 services.AddCoreServices(context.Configuration);
-
-                // Register algorithmic patterns
-                services.AddFundamentalSortingPattern();
-                // ... other patterns as we build them
             });
 }

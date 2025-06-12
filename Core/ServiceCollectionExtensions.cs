@@ -18,7 +18,8 @@ public static class ServiceCollectionExtensions
             builder.SetMinimumLevel(LogLevel.Information);
         });
 
-        services.AddSingleton<IChallengeRunner, ChallengeRunner>();
+        services.AddSingleton<IInteractiveMenu, InteractiveMenu>();
+        services.AddTransient<IExerciseRunner, ExerciseRunner>();
 
         return services;
     }
