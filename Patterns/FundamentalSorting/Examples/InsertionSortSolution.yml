@@ -1,38 +1,18 @@
-title: "Insertion Sort - My Implementation"
-description: "My solution to AlgoMonster's Insertion Sort challenge"
-pattern: "Fundamental Sorting"
-algomonster_reference: "Intro to Sorting - Insertion Sort"
-
-my_solution:
-  approach: |
-    I implemented insertion sort by treating the first element as already sorted,
-    then for each subsequent element, I find its correct position in the sorted 
-    portion by swapping it backwards until it's in the right place.
+MySolution:
+  ComplexityAnalysis:
+    Time: "O(n²)"
+    Space: "O(1)"
+    Stable: true
+    InPlace: true
   
-  key_insights:
-    - "The sorted portion grows from left to right with each iteration"
-    - "Each element 'bubbles' backwards to find its correct position"
-    - "Works well for small datasets or nearly sorted data"
-    - "In-place algorithm with no extra memory needed"
-  
-  complexity_analysis:
-    time: "O(n²)"
-    space: "O(1)"
-    stable: true
-    in_place: true
-  
-  implementation: |
-    My approach uses a nested loop where the outer loop iterates through
-    each element, and the inner loop swaps the current element backwards
-    until it finds its correct position.
-
-test_cases:
-  - input: "[64, 34, 25, 12, 22, 11, 90]"
-    expected: "[11, 12, 22, 25, 34, 64, 90]"
-    notes: "Standard unsorted array"
-  - input: "[5, 2, 4, 6, 1, 3]"
-    expected: "[1, 2, 3, 4, 5, 6]"
-    notes: "AlgoMonster example case"
-  - input: "[1, 2, 3, 4, 5]"
-    expected: "[1, 2, 3, 4, 5]"
-    notes: "Already sorted - best case O(n)"
+  Implementation: |
+    for (int i = 1; i < list.Count; i++)
+    {
+        int current = i;
+        // Move element backwards until it finds correct position
+        while (current > 0 && list[current] < list[current - 1])
+        {
+            (list[current], list[current - 1]) = (list[current - 1], list[current]);
+            current--;
+        }
+    }

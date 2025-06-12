@@ -27,17 +27,6 @@ public class InsertionSortSolution : AlgorithmBase
         Console.WriteLine($"📚 Reference: {_content.AlgoMonsterReference}");
         Console.WriteLine();
 
-        Console.WriteLine("🎯 My Approach:");
-        Console.WriteLine(_content.MySolution.Approach);
-        Console.WriteLine();
-
-        Console.WriteLine("💡 Key Insights:");
-        foreach (var insight in _content.MySolution.KeyInsights)
-        {
-            Console.WriteLine($"  • {insight}");
-        }
-        Console.WriteLine();
-
         DisplayComplexityAnalysis();
         await RunTestCases();
         DemonstrateImplementation();
