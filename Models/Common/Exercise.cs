@@ -8,11 +8,11 @@ namespace AlgoMonsterComplete.Models.Common
 {
     public class Exercise
     {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public string Pattern { get; set; }
-        public string AlgoMonsterReference { get; set; }
-        public Solution MySolution { get; set; }
-        public List<TestCase> TestCases { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Pattern { get; set; } = string.Empty;
+        public string AlgoMonsterReference { get; set; } = string.Empty;
+        public Solution MySolution { get; set; } = new();
+        public List<TestCase> TestCases { get; set; } = new();
     }
 }

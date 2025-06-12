@@ -7,5 +7,5 @@ public interface IExerciseRunner
     string Name { get; }
     string Description { get; }
     string Pattern { get; }
-    Task RunExerciseAsync();
+    void RunExerciseAsync();
 }

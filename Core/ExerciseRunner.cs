@@ -33,14 +33,14 @@ public class ExerciseRunner : IExerciseRunner
     public string Description => _exercise.Description;
     public string Pattern => _exercise.Pattern;
 
-    public async Task RunExerciseAsync()
+    public void RunExerciseAsync()
     {
         Console.WriteLine($"📚 Reference: {_exercise.AlgoMonsterReference}");
         Console.WriteLine();
 
         DisplayComplexityAnalysis();
         DisplayImplementation();
-        await RunUnitTests();
+        RunUnitTests();
         DemonstrateAlgorithm();
     }
 
@@ -65,7 +65,7 @@ public class ExerciseRunner : IExerciseRunner
         }
     }
 
-    private async Task RunUnitTests()
+    private void RunUnitTests()
     {
         if (_compiledMethod == null)
         {
@@ -73,17 +73,35 @@ public class ExerciseRunner : IExerciseRunner
             return;
         }
 
-        Console.WriteLine("🧪 Unit Tests (Running my implementation against test cases):");
-
-        foreach (var testCase in _exercise.TestCases)
+        if (_exercise.TestCases == null || !_exercise.TestCases.Any())
         {
+            Console.WriteLine("⚠️ No test cases found in YAML file");
+            return;
+        }
+
+        Console.WriteLine("🧪 Unit Tests (Running my implementation against test cases):");
+        Console.WriteLine($"Found {_exercise.TestCases.Count} test case(s)");
+        Console.WriteLine();
+
+        int passCount = 0;
+        int totalCount = _exercise.TestCases.Count;
+
+        for (int i = 0; i < _exercise.TestCases.Count; i++)
+        {
+            var testCase = _exercise.TestCases[i];
+            Console.WriteLine($"Test {i + 1}/{totalCount}:");
+
             try
             {
                 var input = ParseInput(testCase.Input);
                 var result = ExecuteAlgorithm(input);
                 var resultStr = FormatOutput(result);
 
-                var status = resultStr == testCase.Expected ? "✅ PASS" : "❌ FAIL";
+                bool passed = resultStr == testCase.Expected;
+                var status = passed ? "✅ PASS" : "❌ FAIL";
+
+                if (passed) passCount++;
+
                 Console.WriteLine($"  {status}");
                 Console.WriteLine($"     Input: {testCase.Input}");
                 Console.WriteLine($"     Expected: {testCase.Expected}");
@@ -91,15 +109,35 @@ public class ExerciseRunner : IExerciseRunner
 
                 if (!string.IsNullOrEmpty(testCase.Notes))
                     Console.WriteLine($"     Notes: {testCase.Notes}");
-                Console.WriteLine();
+
+                if (!passed)
+                {
+                    Console.WriteLine($"     ❌ Test failed - arrays don't match");
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"  ❌ ERROR - {ex.Message}");
                 Console.WriteLine($"     Input: {testCase.Input}");
-                Console.WriteLine();
+                _logger.LogError(ex, "Test case {TestIndex} failed with exception", i + 1);
             }
+
+            Console.WriteLine();
         }
+
+        // Summary
+        Console.WriteLine($"📊 Test Results: {passCount}/{totalCount} passed");
+
+        if (passCount == totalCount)
+        {
+            Console.WriteLine("🎉 All tests passed!");
+        }
+        else
+        {
+            Console.WriteLine($"⚠️ {totalCount - passCount} test(s) failed");
+        }
+
+        Console.WriteLine();
     }
 
     private void DemonstrateAlgorithm()

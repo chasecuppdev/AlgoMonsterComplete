@@ -61,7 +61,7 @@ public class InteractiveMenu : IInteractiveMenu
             _logger.LogInformation("Running exercise: {exerciseName} in pattern: {Pattern}",
                 exerciseName, patternKey);
 
-            await exercise.RunExerciseAsync();
+            exercise.RunExerciseAsync();
         }
         catch (Exception ex)
         {
@@ -148,7 +148,7 @@ public class InteractiveMenu : IInteractiveMenu
 
             try
             {
-                await selectedexercise.RunExerciseAsync();
+                selectedexercise.RunExerciseAsync();
             }
             catch (Exception ex)
             {

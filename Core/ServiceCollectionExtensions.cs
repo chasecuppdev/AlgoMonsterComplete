@@ -27,6 +27,12 @@ public static class ServiceCollectionExtensions
 
     private static void RegisterExercisesFromYaml(IServiceCollection services)
     {
+        if (!Directory.Exists("Patterns"))
+        {
+            Console.WriteLine("⚠️ Patterns directory not found - no exercises loaded");
+            return;
+        }
+
         var yamlFiles = Directory.GetFiles("Patterns", "*.yml", SearchOption.AllDirectories);
 
         foreach (var yamlFile in yamlFiles)
@@ -37,7 +43,7 @@ public static class ServiceCollectionExtensions
             if (AlgorithmPatterns.FolderToPatternMap.TryGetValue(folderName, out var pattern))
             {
                 services.AddKeyedTransient<IExerciseRunner>(pattern, (provider, key) =>
-                    new ExerciseRunner(yamlFile, provider.GetService<ILogger<ExerciseRunner>>()));
+                    new ExerciseRunner(yamlFile, provider.GetRequiredService<ILogger<ExerciseRunner>>()));
             }
         }
     }
