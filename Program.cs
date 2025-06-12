@@ -1,12 +1,12 @@
 ﻿// ========================
 // File: Program.cs
 // ========================
+using AlgoMonsterComplete.Core;
+using AlgoMonsterComplete.Core.Interfaces;
+using AlgoMonsterComplete.Patterns.FundamentalSorting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using AlgoMonsterComplete.Core;
-using AlgoMonsterComplete.Core.Interfaces;
-using AlgoMonsterComplete.Patterns.BinarySearch;
 
 namespace AlgoMonsterComplete;
 
@@ -34,10 +34,7 @@ public class Program
                 services.AddCoreServices(context.Configuration);
 
                 // Register algorithmic patterns
-                services.AddBinarySearchPattern();
-                // services.AddTwoPointersPattern();
-                // services.AddDepthFirstSearchPattern();
-                // services.AddBacktrackingPattern();
+                services.AddFundamentalSortingPattern();
                 // ... other patterns as we build them
             });
 }
