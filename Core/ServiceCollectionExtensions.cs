@@ -4,14 +4,13 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using AlgoMonsterComplete.Core;
 using AlgoMonsterComplete.Core.Interfaces;
 
-namespace AlgoMonsterComplete.Infrastructure;
+namespace AlgoMonsterComplete.Core;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructureServices(
+    public static IServiceCollection AddCoreServices(
         this IServiceCollection services,
         IConfiguration configuration)
     {
@@ -22,12 +21,8 @@ public static class ServiceCollectionExtensions
             builder.SetMinimumLevel(LogLevel.Information);
         });
 
-        return services;
-    }
-
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
-    {
         services.AddSingleton<IChallengeRunner, ChallengeRunner>();
+
         return services;
     }
 }

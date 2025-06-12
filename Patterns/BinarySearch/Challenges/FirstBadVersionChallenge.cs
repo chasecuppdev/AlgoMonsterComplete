@@ -2,8 +2,8 @@
 // File: Patterns/BinarySearch/Challenges/FirstBadVersionChallenge.cs
 // ========================
 using Microsoft.Extensions.Logging;
-using AlgoMonsterComplete.Core;
 using AlgoMonsterComplete.Core.Interfaces;
+using AlgoMonsterComplete.Core.BaseClasses;
 
 namespace AlgoMonsterComplete.Patterns.BinarySearch.Challenges;
 

@@ -2,7 +2,7 @@
 // File: Patterns/BinarySearch/Examples/BasicBinarySearchExample.cs
 // ========================
 using Microsoft.Extensions.Logging;
-using AlgoMonsterComplete.Core;
+using AlgoMonsterComplete.Core.BaseClasses;
 
 namespace AlgoMonsterComplete.Patterns.BinarySearch.Examples;
 
