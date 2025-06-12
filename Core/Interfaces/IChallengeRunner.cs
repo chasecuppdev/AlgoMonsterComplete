@@ -1,7 +1,4 @@
-﻿// ========================
-// File: Core/Interfaces/IChallengeRunner.cs
-// ========================
-namespace AlgoMonsterComplete.Core.Interfaces;
+﻿namespace AlgoMonsterComplete.Core.Interfaces;
 
 public interface IChallengeRunner
 {

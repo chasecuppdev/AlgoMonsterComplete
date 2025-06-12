@@ -1,7 +1,4 @@
-﻿// ========================
-// File: Core/ChallengeBase.cs
-// ========================
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using AlgoMonsterComplete.Core.Interfaces;
 
 namespace AlgoMonsterComplete.Core.BaseClasses;

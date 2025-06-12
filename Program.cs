@@ -1,7 +1,4 @@
-﻿// ========================
-// File: Program.cs
-// ========================
-using AlgoMonsterComplete.Core;
+﻿using AlgoMonsterComplete.Core;
 using AlgoMonsterComplete.Core.Interfaces;
 using AlgoMonsterComplete.Patterns.FundamentalSorting;
 using Microsoft.Extensions.DependencyInjection;

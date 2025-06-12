@@ -1,7 +1,4 @@
-﻿// ========================
-// File: Infrastructure/ServiceCollectionExtensions.cs
-// ========================
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using AlgoMonsterComplete.Core.Interfaces;

@@ -1,7 +1,4 @@
-﻿// ========================
-// File: Core/ChallengeRunner.cs
-// ========================
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using AlgoMonsterComplete.Core.Interfaces;
 
