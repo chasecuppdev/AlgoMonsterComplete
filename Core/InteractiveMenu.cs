@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using AlgoMonsterComplete.Core.Interfaces;
+using AlgoMonsterComplete.Data.Constants;
 
 namespace AlgoMonsterComplete.Core;
 
@@ -14,24 +15,7 @@ public class InteractiveMenu : IInteractiveMenu
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
-        _patternDisplayNames = new Dictionary<string, string>
-        {
-            // Core patterns from AlgoMonster
-            ["fundamental-sorting"] = "Fundamental Sorting",
-            ["binary-search"] = "Binary Search",
-            ["two-pointers"] = "Two Pointers",
-            ["depth-first-search"] = "Depth First Search",
-            ["backtracking"] = "Backtracking",
-            ["breadth-first-search"] = "Breadth First Search",
-            ["graph"] = "Graph",
-            ["priority-queue-heap"] = "Priority Queue / Heap",
-            ["dynamic-programming"] = "Dynamic Programming",
-            ["advanced-data-structures"] = "Advanced Data Structures",
-            ["miscellaneous"] = "Miscellaneous",
-            // Design patterns
-            ["oop-design"] = "OOP Design",
-            ["system-design"] = "System Design"
-        };
+        _patternDisplayNames = AlgorithmPatterns.PatternDisplayNames;
     }
 
     public async Task RunAsync()

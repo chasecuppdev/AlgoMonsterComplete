@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using AlgoMonsterComplete.Core.Interfaces;
+using AlgoMonsterComplete.Data.Constants;
 
 namespace AlgoMonsterComplete.Core;
 
@@ -19,8 +20,25 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddSingleton<IInteractiveMenu, InteractiveMenu>();
-        services.AddTransient<IExerciseRunner, ExerciseRunner>();
+        RegisterExercisesFromYaml(services);
 
         return services;
+    }
+
+    private static void RegisterExercisesFromYaml(IServiceCollection services)
+    {
+        var yamlFiles = Directory.GetFiles("Patterns", "*.yml", SearchOption.AllDirectories);
+
+        foreach (var yamlFile in yamlFiles)
+        {
+            var pathParts = yamlFile.Split(Path.DirectorySeparatorChar);
+            var folderName = pathParts[1];
+
+            if (AlgorithmPatterns.FolderToPatternMap.TryGetValue(folderName, out var pattern))
+            {
+                services.AddKeyedTransient<IExerciseRunner>(pattern, (provider, key) =>
+                    new ExerciseRunner(yamlFile, provider.GetService<ILogger<ExerciseRunner>>()));
+            }
+        }
     }
 }
