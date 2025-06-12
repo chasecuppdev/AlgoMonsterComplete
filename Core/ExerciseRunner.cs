@@ -95,25 +95,6 @@ public class ExerciseRunner : IExerciseRunner
         ExecuteAlgorithmWithVisualization(demo);
     }
 
-    // These methods would need to be implemented based on the specific algorithm
-    // For now, let's implement insertion sort as the example
-    private List<int> ExecuteAlgorithm(int[] input)
-    {
-        var list = input.ToList();
-
-        // Insertion Sort implementation
-        for (int i = 1; i < list.Count; i++)
-        {
-            int current = i;
-            while (current > 0 && list[current] < list[current - 1])
-            {
-                (list[current], list[current - 1]) = (list[current - 1], list[current]);
-                current--;
-            }
-        }
-        return list;
-    }
-
     private void ExecuteAlgorithmWithVisualization(int[] input)
     {
         var list = input.ToList();
