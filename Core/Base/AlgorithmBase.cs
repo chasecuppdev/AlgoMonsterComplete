@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Logging;
 using AlgoMonsterComplete.Core.Interfaces;
 
-namespace AlgoMonsterComplete.Core;
+namespace AlgoMonsterComplete.Core.BaseClasses;
 
 /// <summary>
 /// Base class for instructional algorithm examples that demonstrate patterns and techniques

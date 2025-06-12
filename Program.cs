@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using AlgoMonsterComplete.Core;
 using AlgoMonsterComplete.Core.Interfaces;
 using AlgoMonsterComplete.Patterns.BinarySearch;
-using AlgoMonsterComplete.Infrastructure;
 
 namespace AlgoMonsterComplete;
 
@@ -32,7 +31,7 @@ public class Program
             .ConfigureServices((context, services) =>
             {
                 // Register core infrastructure
-                services.AddInfrastructureServices(context.Configuration);
+                services.AddCoreServices(context.Configuration);
 
                 // Register algorithmic patterns
                 services.AddBinarySearchPattern();
@@ -40,8 +39,5 @@ public class Program
                 // services.AddDepthFirstSearchPattern();
                 // services.AddBacktrackingPattern();
                 // ... other patterns as we build them
-
-                // Register main application services
-                services.AddApplicationServices();
             });
 }
