@@ -17,6 +17,7 @@ public class ChallengeRunner : IChallengeRunner
         _patternDisplayNames = new Dictionary<string, string>
         {
             // Core patterns from AlgoMonster
+            ["fundamental-sorting"] = "Fundamental Sorting",
             ["binary-search"] = "Binary Search",
             ["two-pointers"] = "Two Pointers",
             ["depth-first-search"] = "Depth First Search",
