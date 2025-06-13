@@ -234,10 +234,15 @@ public class ExerciseRunner : IExerciseRunner
 
     private int[] ParseInput(string input)
     {
-        return input.Trim('[', ']')
-                   .Split(',')
-                   .Select(s => int.Parse(s.Trim()))
-                   .ToArray();
+        var trimmed = input.Trim('[', ']');
+
+        // Handle empty array case
+        if (string.IsNullOrWhiteSpace(trimmed))
+            return Array.Empty<int>();
+
+        return trimmed.Split(',')
+                      .Select(s => int.Parse(s.Trim()))
+                      .ToArray();
     }
 
     private string FormatOutput(List<int> result)
