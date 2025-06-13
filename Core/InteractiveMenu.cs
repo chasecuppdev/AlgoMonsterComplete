@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using AlgoMonsterComplete.Core.Interfaces;
 using AlgoMonsterComplete.Data.Constants;
 
@@ -9,12 +10,14 @@ public class InteractiveMenu : IInteractiveMenu
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<InteractiveMenu> _logger;
+    private readonly IHostApplicationLifetime _lifetime;
     private readonly Dictionary<string, string> _patternDisplayNames;
 
-    public InteractiveMenu(IServiceProvider serviceProvider, ILogger<InteractiveMenu> logger)
+    public InteractiveMenu(IServiceProvider serviceProvider, ILogger<InteractiveMenu> logger, IHostApplicationLifetime lifetime)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
+        _lifetime = lifetime;
         _patternDisplayNames = AlgorithmPatterns.PatternDisplayNames;
     }
 
@@ -29,15 +32,23 @@ public class InteractiveMenu : IInteractiveMenu
         while (true)
         {
             Console.WriteLine("\nCommands:");
-            Console.WriteLine("  exercises <pattern>      - Show interactive menu of exercises");
-            Console.WriteLine("  challenges <pattern>    - Show interactive menu of challenges");
-            Console.WriteLine("  patterns               - Show all available patterns");
-            Console.WriteLine("  quit                   - Exit application");
+            Console.WriteLine("  exercises <pattern> (ex) - Show interactive menu of exercises");
+            Console.WriteLine("  challenges <pattern>     - Show interactive menu of challenges");
+            Console.WriteLine("  patterns (p)             - Show all available patterns");
+            Console.WriteLine("  quit (q)                 - Exit application");
             Console.Write("\n> ");
 
             var input = Console.ReadLine()?.Trim();
-            if (string.IsNullOrEmpty(input) || input.Equals("quit", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(input))
+                continue;
+
+            // Handle quit commands
+            if (IsQuitCommand(input))
+            {
+                Console.WriteLine("👋 Goodbye! Happy algorithm practicing!");
+                _lifetime.StopApplication();
                 break;
+            }
 
             await ProcessCommand(input);
         }
@@ -108,6 +119,12 @@ public class InteractiveMenu : IInteractiveMenu
         await Task.CompletedTask;
     }
 
+    private static bool IsQuitCommand(string input)
+    {
+        var quitCommands = new[] { "quit", "q", "exit" };
+        return quitCommands.Contains(input.ToLower());
+    }
+
     private async Task ShowExerciseMenuAsync(string patternKey)
     {
         if (!_patternDisplayNames.ContainsKey(patternKey))
@@ -171,16 +188,21 @@ public class InteractiveMenu : IInteractiveMenu
 
         switch (command)
         {
-            case "patterns":
+            case "patterns" or "p":
                 await ListPatternsAsync();
                 break;
 
-            case "exercises" when parts.Length >= 2:
+            case "exercises" or "ex" when parts.Length >= 2:
                 await ShowExerciseMenuAsync(parts[1]);
                 break;
 
+            case "exercises" or "ex":
+                Console.WriteLine("❌ Please specify a pattern. Usage: exercises <pattern>");
+                await ListPatternsAsync();
+                break;
+
             default:
-                Console.WriteLine("❌ Invalid command. Type 'quit' to exit.");
+                Console.WriteLine("❌ Invalid command. Available commands: exercises, patterns, quit");
                 break;
         }
     }

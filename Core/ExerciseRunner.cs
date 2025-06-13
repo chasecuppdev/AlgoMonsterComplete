@@ -2,11 +2,7 @@
 using AlgoMonsterComplete.Models.Common;
 using AlgoMonsterComplete.Core.Interfaces;
 using YamlDotNet.Serialization;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
 using System.Reflection;
-using System.Runtime.Loader;
 
 namespace AlgoMonsterComplete.Core;
 
@@ -15,12 +11,15 @@ public class ExerciseRunner : IExerciseRunner
     private readonly Exercise _exercise;
     private readonly string _yamlPath;
     private readonly ILogger<ExerciseRunner> _logger;
+    private readonly IAlgorithmCompilationService _compilationService;
     private MethodInfo? _compiledMethod;
 
-    public ExerciseRunner(string yamlPath, ILogger<ExerciseRunner> logger)
+    public ExerciseRunner(string yamlPath, ILogger<ExerciseRunner> logger, IAlgorithmCompilationService compilationService)
     {
         _yamlPath = yamlPath;
         _logger = logger;
+        _compilationService = compilationService;
+
         var yamlContent = File.ReadAllText(yamlPath);
         var deserializer = new DeserializerBuilder().Build();
         _exercise = deserializer.Deserialize<Exercise>(yamlContent);
@@ -162,99 +161,8 @@ public class ExerciseRunner : IExerciseRunner
 
     private void CompileAlgorithm()
     {
-        try
-        {
-            var code = _exercise.MySolution?.Implementation;
-            if (string.IsNullOrEmpty(code))
-            {
-                _logger.LogWarning("No implementation code found in YAML for {ExerciseName}", _exercise.Title);
-                return;
-            }
-
-            _logger.LogInformation("Compiling algorithm: {ExerciseName}", _exercise.Title);
-
-            // Create the full class with the user's method
-            var fullCode = $@"
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace DynamicAlgorithm
-{{
-    public static class Algorithm 
-    {{
-        {code}
-    }}
-}}";
-
-            // Parse into syntax tree
-            var syntaxTree = CSharpSyntaxTree.ParseText(fullCode);
-
-            // Add required assembly references
-            var references = new[]
-            {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(List<>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
-                MetadataReference.CreateFromFile(Assembly.Load("System.Runtime").Location),
-                MetadataReference.CreateFromFile(Assembly.Load("System.Collections").Location)
-            };
-
-            // Create compilation
-            var assemblyName = $"Algorithm_{Guid.NewGuid():N}";
-            var compilation = CSharpCompilation.Create(
-                assemblyName,
-                new[] { syntaxTree },
-                references,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-            // Compile to memory
-            using var ms = new MemoryStream();
-            var emitResult = compilation.Emit(ms);
-
-            if (!emitResult.Success)
-            {
-                var errors = string.Join("\n", emitResult.Diagnostics
-                    .Where(d => d.Severity == DiagnosticSeverity.Error)
-                    .Select(d => d.GetMessage()));
-
-                _logger.LogError("Compilation failed for {ExerciseName}: {Errors}", _exercise.Title, errors);
-                Console.WriteLine($"❌ Compilation failed: {errors}");
-                return;
-            }
-
-            // Load the compiled assembly
-            ms.Seek(0, SeekOrigin.Begin);
-            var context = AssemblyLoadContext.Default;
-            var assembly = context.LoadFromStream(ms);
-
-            var algorithmType = assembly.GetType("DynamicAlgorithm.Algorithm");
-            if (algorithmType == null)
-            {
-                _logger.LogError("Could not find Algorithm class in compiled assembly");
-                return;
-            }
-
-            // Find the method - look for common method names
-            _compiledMethod = algorithmType.GetMethod("Sort")
-                           ?? algorithmType.GetMethod("Execute")
-                           ?? algorithmType.GetMethod("Run")
-                           ?? algorithmType.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                               .FirstOrDefault(m => m.ReturnType == typeof(List<int>) || m.ReturnType == typeof(int[]));
-
-            if (_compiledMethod == null)
-            {
-                _logger.LogError("Could not find suitable method in compiled algorithm");
-                return;
-            }
-
-            _logger.LogInformation("Successfully compiled algorithm: {ExerciseName}", _exercise.Title);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error compiling algorithm for {ExerciseName}", _exercise.Title);
-        }
+        var code = _exercise.MySolution?.Implementation;
+        _compiledMethod = _compilationService.CompileAlgorithm(_exercise.Title, code ?? string.Empty);
     }
 
     private List<int> ExecuteAlgorithm(int[] input)

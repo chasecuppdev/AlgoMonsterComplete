@@ -19,7 +19,11 @@ public static class ServiceCollectionExtensions
             builder.SetMinimumLevel(LogLevel.Information);
         });
 
+        // Register core services
+        services.AddSingleton<IAlgorithmCompilationService, AlgorithmCompilationService>();
         services.AddSingleton<IInteractiveMenu, InteractiveMenu>();
+
+        // Register exercises from YAML files
         RegisterExercisesFromYaml(services);
 
         return services;
@@ -35,16 +39,36 @@ public static class ServiceCollectionExtensions
 
         var yamlFiles = Directory.GetFiles("Patterns", "*.yml", SearchOption.AllDirectories);
 
+        if (!yamlFiles.Any())
+        {
+            Console.WriteLine("⚠️ No YAML files found in Patterns directory");
+            return;
+        }
+
+        int registeredCount = 0;
         foreach (var yamlFile in yamlFiles)
         {
             var pathParts = yamlFile.Split(Path.DirectorySeparatorChar);
+            if (pathParts.Length < 2) continue;
+
             var folderName = pathParts[1];
 
             if (AlgorithmPatterns.FolderToPatternMap.TryGetValue(folderName, out var pattern))
             {
-                services.AddKeyedTransient<IExerciseRunner>(pattern, (provider, key) =>
-                    new ExerciseRunner(yamlFile, provider.GetRequiredService<ILogger<ExerciseRunner>>()));
+                // Register as Singleton to avoid recompilation
+                services.AddKeyedSingleton<IExerciseRunner>(pattern, (provider, key) =>
+                    new ExerciseRunner(yamlFile,
+                        provider.GetRequiredService<ILogger<ExerciseRunner>>(),
+                        provider.GetRequiredService<IAlgorithmCompilationService>()));
+
+                registeredCount++;
+            }
+            else
+            {
+                Console.WriteLine($"⚠️ Unknown pattern folder: {folderName} (file: {yamlFile})");
             }
         }
+
+        Console.WriteLine($"✅ Registered {registeredCount} exercise(s) from YAML files");
     }
 }
