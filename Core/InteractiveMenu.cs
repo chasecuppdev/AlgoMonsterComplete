@@ -33,7 +33,6 @@ public class InteractiveMenu : IInteractiveMenu
         {
             Console.WriteLine("\nCommands:");
             Console.WriteLine("  exercises <pattern> (ex) - Show interactive menu of exercises");
-            Console.WriteLine("  challenges <pattern>     - Show interactive menu of challenges");
             Console.WriteLine("  patterns (p)             - Show all available patterns");
             Console.WriteLine("  shortcuts (s)            - Show pattern shortcuts");
             Console.WriteLine("  quit (q)                 - Exit application");
@@ -97,8 +96,7 @@ public class InteractiveMenu : IInteractiveMenu
         foreach (var pattern in _patternDisplayNames)
         {
             var exerciseCount = _serviceProvider.GetKeyedServices<IExerciseRunner>(pattern.Key).Count();
-            var challengeCount = _serviceProvider.GetKeyedServices<IExerciseRunner>(pattern.Key).Count();
-            Console.WriteLine($"  {pattern.Key,-25} - {pattern.Value} ({exerciseCount} exercises, {challengeCount} challenges)");
+            Console.WriteLine($"  {pattern.Key,-25} - {pattern.Value} ({exerciseCount} exercises)");
         }
 
         Console.WriteLine("\n💡 Pro tip: Use shortcuts like 'fs', 'bs', 'dp' or partial names like 'fund', 'sort'");
