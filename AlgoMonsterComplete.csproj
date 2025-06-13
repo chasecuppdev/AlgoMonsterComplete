@@ -24,6 +24,9 @@
     <None Update="Patterns\FundamentalSorting\InsertionSort.yml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Patterns\FundamentalSorting\SelectionSort.yml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

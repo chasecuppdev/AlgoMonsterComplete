@@ -1,0 +1,64 @@
+Title: "Selection Sort"
+Description: "Sort array by repeatedly finding minimum element and placing it at the beginning"
+Pattern: "fundamental-sorting"
+AlgoMonsterReference: "https://algo.monster/problems/selection_sort"
+
+MySolution:
+  ComplexityAnalysis:
+    Time: "O(n^2)"
+    Space: "O(1)"
+    Stable: false
+    InPlace: true
+  
+  Implementation: |
+    public static List<int> SortList(List<int> unsortedList)
+    {
+        int listLength = unsortedList.Count;
+        for (int i = 0; i < listLength; i++)
+        {
+            int minIndex = i;
+            
+            for (int j = minIndex; j < listLength; j++)
+            {
+                if (unsortedList[j] < unsortedList[minIndex]) minIndex = j;
+            }
+            
+            int temp = unsortedList[minIndex];
+            unsortedList[minIndex] = unsortedList[i];
+            unsortedList[i] = temp;
+        }
+        return unsortedList;
+    }
+
+TestCases:
+  - Input: "[]"
+    Expected: "[]"
+    Notes: "Empty array - classic edge case"
+  
+  - Input: "[42]"
+    Expected: "[42]"
+    Notes: "Single element - no swaps needed"
+  
+  - Input: "[5, 5, 5, 5]"
+    Expected: "[5, 5, 5, 5]"
+    Notes: "All duplicates - tests stability handling"
+  
+  - Input: "[1, 2, 3, 4, 5]"
+    Expected: "[1, 2, 3, 4, 5]"
+    Notes: "Already sorted - worst case for selection sort"
+  
+  - Input: "[-3, -1, -7, -4, -2]"
+    Expected: "[-7, -4, -3, -2, -1]"
+    Notes: "All negative numbers - tests comparison logic"
+  
+  - Input: "[2147483647, -2147483648, 0]"
+    Expected: "[-2147483648, 0, 2147483647]"
+    Notes: "Integer bounds - tests overflow scenarios"
+  
+  - Input: "[3, 1, 4, 1, 5, 9, 2, 6, 5]"
+    Expected: "[1, 1, 2, 3, 4, 5, 5, 6, 9]"
+    Notes: "Mixed duplicates - comprehensive test"
+  
+  - Input: "[10, 9, 8, 7, 6, 5, 4, 3, 2, 1]"
+    Expected: "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+    Notes: "Reverse sorted - maximum swaps needed"
