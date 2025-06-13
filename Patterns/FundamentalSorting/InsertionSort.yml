@@ -11,21 +11,25 @@ MySolution:
     InPlace: true
   
   Implementation: |
-    public static List<int> Sort(int[] input)
+    public static int[] Sort(int[] input)
     {
-        var list = input.ToList();
+        var array = (int[])input.Clone();
         
-        for (int i = 1; i < list.Count; i++)
+        for (int i = 1; i < array.Length; i++)
         {
-            int current = i;
-            while (current > 0 && list[current] < list[current - 1])
+            int key = array[i];
+            int j = i - 1;
+            
+            while (j >= 0 && array[j] > key)
             {
-                (list[current], list[current - 1]) = (list[current - 1], list[current]);
-                current--;
+                array[j + 1] = array[j];
+                j--;
             }
+            
+            array[j + 1] = key;
         }
         
-        return list;
+        return array;
     }
 
 TestCases:
