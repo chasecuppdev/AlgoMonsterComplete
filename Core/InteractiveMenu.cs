@@ -35,6 +35,7 @@ public class InteractiveMenu : IInteractiveMenu
             Console.WriteLine("  exercises <pattern> (ex) - Show interactive menu of exercises");
             Console.WriteLine("  challenges <pattern>     - Show interactive menu of challenges");
             Console.WriteLine("  patterns (p)             - Show all available patterns");
+            Console.WriteLine("  shortcuts (s)            - Show pattern shortcuts");
             Console.WriteLine("  quit (q)                 - Exit application");
             Console.Write("\n> ");
 
@@ -56,21 +57,30 @@ public class InteractiveMenu : IInteractiveMenu
 
     public async Task RunExerciseAsync(string patternKey, string exerciseName)
     {
+        // Resolve pattern first
+        var resolvedPattern = AlgorithmPatterns.ResolvePattern(patternKey);
+        if (resolvedPattern == null)
+        {
+            Console.WriteLine($"❌ Pattern '{patternKey}' not found");
+            await ListPatternsAsync();
+            return;
+        }
+
         try
         {
-            var exercises = _serviceProvider.GetKeyedServices<IExerciseRunner>(patternKey);
+            var exercises = _serviceProvider.GetKeyedServices<IExerciseRunner>(resolvedPattern);
             var exercise = exercises.FirstOrDefault(e =>
                 e.Name.Equals(exerciseName, StringComparison.OrdinalIgnoreCase));
 
             if (exercise == null)
             {
-                Console.WriteLine($"❌ exercise '{exerciseName}' not found in pattern '{patternKey}'");
-                await ListExercisesAsync(patternKey);
+                Console.WriteLine($"❌ Exercise '{exerciseName}' not found in pattern '{resolvedPattern}'");
+                await ListExercisesAsync(resolvedPattern);
                 return;
             }
 
             _logger.LogInformation("Running exercise: {exerciseName} in pattern: {Pattern}",
-                exerciseName, patternKey);
+                exerciseName, resolvedPattern);
 
             exercise.RunExerciseAsync();
         }
@@ -90,21 +100,27 @@ public class InteractiveMenu : IInteractiveMenu
             var challengeCount = _serviceProvider.GetKeyedServices<IExerciseRunner>(pattern.Key).Count();
             Console.WriteLine($"  {pattern.Key,-25} - {pattern.Value} ({exerciseCount} exercises, {challengeCount} challenges)");
         }
+
+        Console.WriteLine("\n💡 Pro tip: Use shortcuts like 'fs', 'bs', 'dp' or partial names like 'fund', 'sort'");
+        Console.WriteLine("   Type 'shortcuts' to see all available shortcuts");
+
         await Task.CompletedTask;
     }
 
     public async Task ListExercisesAsync(string patternKey)
     {
-        if (!_patternDisplayNames.ContainsKey(patternKey))
+        // Resolve pattern first
+        var resolvedPattern = AlgorithmPatterns.ResolvePattern(patternKey);
+        if (resolvedPattern == null || !_patternDisplayNames.ContainsKey(resolvedPattern))
         {
             Console.WriteLine($"❌ Pattern '{patternKey}' not found");
             await ListPatternsAsync();
             return;
         }
 
-        var exercises = _serviceProvider.GetKeyedServices<IExerciseRunner>(patternKey);
+        var exercises = _serviceProvider.GetKeyedServices<IExerciseRunner>(resolvedPattern);
 
-        Console.WriteLine($"\n🎓 exercises in {_patternDisplayNames[patternKey]}:");
+        Console.WriteLine($"\n🎓 Exercises in {_patternDisplayNames[resolvedPattern]}:");
         if (!exercises.Any())
         {
             Console.WriteLine("  No exercises available yet for this pattern.");
@@ -119,30 +135,74 @@ public class InteractiveMenu : IInteractiveMenu
         await Task.CompletedTask;
     }
 
+    private async Task ShowShortcutsAsync()
+    {
+        Console.WriteLine("\n⚡ Pattern Shortcuts:");
+        Console.WriteLine("================");
+
+        foreach (var shortcut in AlgorithmPatterns.PatternShortcuts)
+        {
+            var displayName = AlgorithmPatterns.PatternDisplayNames[shortcut.Value];
+            Console.WriteLine($"  {shortcut.Key,-4} → {shortcut.Value,-25} ({displayName})");
+        }
+
+        Console.WriteLine("\n💡 Fuzzy matching also works:");
+        Console.WriteLine("  'fund' or 'sort' → fundamental-sorting");
+        Console.WriteLine("  'bin' or 'search' → binary-search");
+        Console.WriteLine("  'two' or 'pointer' → two-pointers");
+        Console.WriteLine("\n📝 Examples:");
+        Console.WriteLine("  ex fs        # fundamental-sorting");
+        Console.WriteLine("  ex fund      # fundamental-sorting");
+        Console.WriteLine("  ex bs        # binary-search");
+        Console.WriteLine("  ex dp        # dynamic-programming");
+
+        await Task.CompletedTask;
+    }
+
     private static bool IsQuitCommand(string input)
     {
         var quitCommands = new[] { "quit", "q", "exit" };
         return quitCommands.Contains(input.ToLower());
     }
 
-    private async Task ShowExerciseMenuAsync(string patternKey)
+    private async Task ShowExerciseMenuAsync(string patternInput)
     {
-        if (!_patternDisplayNames.ContainsKey(patternKey))
+        // 🚀 New: Resolve pattern with smart matching
+        var resolvedPattern = AlgorithmPatterns.ResolvePattern(patternInput);
+        if (resolvedPattern == null || !_patternDisplayNames.ContainsKey(resolvedPattern))
         {
-            Console.WriteLine($"❌ Pattern '{patternKey}' not found");
+            Console.WriteLine($"❌ Pattern '{patternInput}' not found");
+
+            // Show suggestion if it was close
+            var suggestions = AlgorithmPatterns.PatternDisplayNames.Keys
+                .Where(key => key.Contains(patternInput.ToLowerInvariant()))
+                .Take(3)
+                .ToList();
+
+            if (suggestions.Any())
+            {
+                Console.WriteLine($"💡 Did you mean: {string.Join(", ", suggestions)}?");
+            }
+
             await ListPatternsAsync();
             return;
         }
 
-        var exercises = _serviceProvider.GetKeyedServices<IExerciseRunner>(patternKey).OrderBy(e => e.Name).ToList();
+        // Show what pattern was resolved to (helpful for fuzzy matches)
+        if (!string.Equals(patternInput, resolvedPattern, StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine($"🎯 Resolved '{patternInput}' → '{resolvedPattern}'");
+        }
+
+        var exercises = _serviceProvider.GetKeyedServices<IExerciseRunner>(resolvedPattern).OrderBy(e => e.Name).ToList();
 
         if (!exercises.Any())
         {
-            Console.WriteLine($"\n🎓 No exercises available for {_patternDisplayNames[patternKey]} yet.");
+            Console.WriteLine($"\n🎓 No exercises available for {_patternDisplayNames[resolvedPattern]} yet.");
             return;
         }
 
-        Console.WriteLine($"\n🎓 exercises in {_patternDisplayNames[patternKey]}:");
+        Console.WriteLine($"\n🎓 Exercises in {_patternDisplayNames[resolvedPattern]}:");
         for (int i = 0; i < exercises.Count; i++)
         {
             Console.WriteLine($"  {i + 1}. 📖 {exercises[i].Name} - {exercises[i].Description}");
@@ -161,7 +221,7 @@ public class InteractiveMenu : IInteractiveMenu
             Console.WriteLine(new string('=', 60));
 
             _logger.LogInformation("Running exercise: {exerciseName} in pattern: {Pattern}",
-                selectedexercise.Name, patternKey);
+                selectedexercise.Name, resolvedPattern);
 
             try
             {
@@ -192,17 +252,22 @@ public class InteractiveMenu : IInteractiveMenu
                 await ListPatternsAsync();
                 break;
 
+            case "shortcuts" or "s":
+                await ShowShortcutsAsync();
+                break;
+
             case "exercises" or "ex" when parts.Length >= 2:
                 await ShowExerciseMenuAsync(parts[1]);
                 break;
 
             case "exercises" or "ex":
                 Console.WriteLine("❌ Please specify a pattern. Usage: exercises <pattern>");
+                Console.WriteLine("💡 Examples: ex fs, ex fund, ex fundamental-sorting");
                 await ListPatternsAsync();
                 break;
 
             default:
-                Console.WriteLine("❌ Invalid command. Available commands: exercises, patterns, quit");
+                Console.WriteLine("❌ Invalid command. Available commands: exercises, patterns, shortcuts, quit");
                 break;
         }
     }
