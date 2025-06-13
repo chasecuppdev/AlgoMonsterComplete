@@ -5,7 +5,7 @@ AlgoMonsterReference: "https://algo.monster/problems/insertion_sort"
 
 MySolution:
   ComplexityAnalysis:
-    Time: "O(n²)"
+    Time: "O(n^2)"
     Space: "O(1)"
     Stable: true
     InPlace: true
