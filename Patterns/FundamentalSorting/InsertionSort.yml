@@ -11,25 +11,22 @@ MySolution:
     InPlace: true
   
   Implementation: |
-    public static int[] Sort(int[] input)
+    public static List<int> SortList(List<int> unsortedList)
     {
-        var array = (int[])input.Clone();
-        
-        for (int i = 1; i < array.Length; i++)
+        // WRITE YOUR BRILLIANT CODE HERE
+        // Insertion Sort
+        for (int i = 0; i < unsortedList.Count; i++)
         {
-            int key = array[i];
-            int j = i - 1;
-            
-            while (j >= 0 && array[j] > key)
+            int current = i;
+            while (current > 0 && unsortedList[current] < unsortedList[current - 1])
             {
-                array[j + 1] = array[j];
-                j--;
+                int temp = unsortedList[current];
+                unsortedList[current] = unsortedList[current - 1];
+                unsortedList[current - 1] = temp;
+                current--;
             }
-            
-            array[j + 1] = key;
         }
-        
-        return array;
+        return unsortedList;
     }
 
 TestCases:

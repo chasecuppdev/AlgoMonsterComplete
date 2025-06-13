@@ -172,7 +172,18 @@ public class ExerciseRunner : IExerciseRunner
 
         try
         {
-            var result = _compiledMethod.Invoke(null, new object[] { input });
+            // Get the method's parameter type
+            var parameters = _compiledMethod.GetParameters();
+            if (parameters.Length != 1)
+                throw new InvalidOperationException("Algorithm method must have exactly one parameter");
+
+            var parameterType = parameters[0].ParameterType;
+
+            // Convert input to the expected parameter type
+            object methodInput = ConvertToParameterType(input, parameterType);
+
+            // Execute the method
+            var result = _compiledMethod.Invoke(null, new[] { methodInput });
 
             // Handle different return types
             return result switch
@@ -187,6 +198,37 @@ public class ExerciseRunner : IExerciseRunner
         {
             _logger.LogError(ex, "Error executing algorithm");
             throw new InvalidOperationException($"Algorithm execution failed: {ex.Message}", ex);
+        }
+    }
+
+    private static object ConvertToParameterType(int[] input, Type parameterType)
+    {
+        // Handle the most common parameter types
+        if (parameterType == typeof(int[]))
+        {
+            return input;
+        }
+        else if (parameterType == typeof(List<int>))
+        {
+            return input.ToList();
+        }
+        else if (parameterType == typeof(IList<int>))
+        {
+            return input.ToList();
+        }
+        else if (parameterType == typeof(IEnumerable<int>))
+        {
+            return input.AsEnumerable();
+        }
+        else if (parameterType == typeof(ICollection<int>))
+        {
+            return input.ToList();
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                $"Unsupported parameter type: {parameterType.Name}. " +
+                $"Supported types: int[], List<int>, IList<int>, IEnumerable<int>, ICollection<int>");
         }
     }
 
