@@ -1,7 +1,7 @@
 Title: "Selection Sort"
 Description: "Sort array by repeatedly finding minimum element and placing it at the beginning"
 Pattern: "fundamental-sorting"
-AlgoMonsterReference: "https://algo.monster/problems/selection_sort"
+AlgoMonsterReference: "https://algo.monster/problems/sorting_intro"
 
 MySolution:
   ComplexityAnalysis:

@@ -1,0 +1,73 @@
+Title: "Bubble Sort"
+Description: "Sort array by repeatedly swapping adjacent elements that are out of order"
+Pattern: "fundamental-sorting"
+AlgoMonsterReference: "https://algo.monster/problems/sorting_intro"
+
+MySolution:
+  ComplexityAnalysis:
+    Time: "O(n^2)"
+    Space: "O(1)"
+    Stable: true
+    InPlace: true
+  
+  Implementation: |
+    public static List<int> SortList(List<int> unsortedList)
+    {
+        // WRITE YOUR BRILLIANT CODE HERE
+        // Bubble Sort
+        int n = unsortedList.Count - 1;
+        for (int i = n; i > 0; i--)
+        {
+            bool swapped = false;
+            for (int j = 0; j < i; j++)
+            {
+                if (unsortedList[j] > unsortedList[j+1])
+                {
+                    int temp = unsortedList[j+1];
+                    unsortedList[j+1] = unsortedList[j];
+                    unsortedList[j] = temp;
+                    swapped = true;
+                }
+            }
+            if (swapped == false) return unsortedList;
+        }
+        
+        return unsortedList; //Hopefully now sorted 
+    }
+
+TestCases:
+  - Input: "[]"
+    Expected: "[]"
+    Notes: "Empty array - immediate return"
+  
+  - Input: "[42]"
+    Expected: "[42]"
+    Notes: "Single element - no swaps needed"
+  
+  - Input: "[1, 2, 3, 4, 5]"
+    Expected: "[1, 2, 3, 4, 5]"
+    Notes: "Already sorted - early termination optimization test"
+  
+  - Input: "[5, 4, 3, 2, 1]"
+    Expected: "[1, 2, 3, 4, 5]"
+    Notes: "Reverse sorted - worst case scenario"
+  
+  - Input: "[3, 1, 4, 1, 5, 9, 2, 6, 5]"
+    Expected: "[1, 1, 2, 3, 4, 5, 5, 6, 9]"
+    Notes: "Mixed duplicates - stability test"
+  
+  - Input: "[5, 5, 5, 5]"
+    Expected: "[5, 5, 5, 5]"
+    Notes: "All duplicates - no swaps should occur"
+  
+  - Input: "[-3, -1, -7, -4, -2]"
+    Expected: "[-7, -4, -3, -2, -1]"
+    Notes: "All negative numbers"
+  
+  - Input: "[2147483647, -2147483648, 0]"
+    Expected: "[-2147483648, 0, 2147483647]"
+    Notes: "Integer boundary values"
+  
+  - Input: "[64, 34, 25, 12, 22, 11, 90]"
+    Expected: "[11, 12, 22, 25, 34, 64, 90]"
+    Notes: "Classic bubble sort example"
