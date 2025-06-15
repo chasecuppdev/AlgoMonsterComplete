@@ -95,14 +95,24 @@ public class ExerciseRunner : IExerciseRunner
                 var result = ExecuteAlgorithm(inputs);
                 var resultStr = FormatOutput(result);
 
-                bool passed = resultStr == testCase.Expected;
+                bool passed = ValidateResult(resultStr, testCase);
                 var status = passed ? "✅ PASS" : "❌ FAIL";
 
                 if (passed) passCount++;
 
                 Console.WriteLine($"  {status}");
                 Console.WriteLine($"     Input: {testCase.Input}");
-                Console.WriteLine($"     Expected: {testCase.Expected}");
+
+                // Display expected result(s)
+                if (testCase.ExpectedOptions != null && testCase.ExpectedOptions.Any())
+                {
+                    Console.WriteLine($"     Expected: Any of [{string.Join(", ", testCase.ExpectedOptions)}]");
+                }
+                else
+                {
+                    Console.WriteLine($"     Expected: {testCase.Expected}");
+                }
+
                 Console.WriteLine($"     Actual: {resultStr}");
 
                 if (!string.IsNullOrEmpty(testCase.Notes))
@@ -110,7 +120,7 @@ public class ExerciseRunner : IExerciseRunner
 
                 if (!passed)
                 {
-                    Console.WriteLine($"     ❌ Test failed - result doesn't match expected");
+                    Console.WriteLine($"     ❌ Test failed - result doesn't match any expected value");
                 }
             }
             catch (Exception ex)
@@ -136,6 +146,18 @@ public class ExerciseRunner : IExerciseRunner
         }
 
         Console.WriteLine();
+    }
+
+    private bool ValidateResult(string actualResult, TestCase testCase)
+    {
+        // If ExpectedOptions is provided and has values, check against all options
+        if (testCase.ExpectedOptions != null && testCase.ExpectedOptions.Any())
+        {
+            return testCase.ExpectedOptions.Contains(actualResult);
+        }
+
+        // Fall back to single Expected value
+        return actualResult == testCase.Expected;
     }
 
     private void CompileAlgorithm()

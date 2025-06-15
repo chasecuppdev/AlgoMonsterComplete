@@ -1,7 +1,7 @@
 Title: "Vanilla Binary Search"
 Description: "Find target element in sorted array using logarithmic divide-and-conquer search"
 Pattern: "binary-search"
-AlgoMonsterReference: "https://algo.monster/problems/binary_search_intro"
+AlgoMonsterReference: "https://algo.monster/problems/binary_search"
 InputFormat: "array, target"
 
 MySolution:
@@ -99,8 +99,8 @@ TestCases:
     Notes: "Odd length array - target in second half"
   
   - Input: "[1, 1, 1, 2, 2, 2], 2"
-    Expected: "3"
-    Notes: "Array with duplicates - finds any valid occurrence"
+    ExpectedOptions: ["3", "4", "5"]
+    Notes: "Array with duplicates - vanilla binary search can find any occurrence"
   
   - Input: "[10, 20, 30, 40, 50, 60, 70, 80, 90, 100], 30"
     Expected: "2"
