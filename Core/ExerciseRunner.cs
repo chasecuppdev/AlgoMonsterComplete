@@ -40,7 +40,6 @@ public class ExerciseRunner : IExerciseRunner
         DisplayComplexityAnalysis();
         DisplayImplementation();
         RunUnitTests();
-        DemonstrateAlgorithm();
     }
 
     private void DisplayComplexityAnalysis()
@@ -92,8 +91,8 @@ public class ExerciseRunner : IExerciseRunner
 
             try
             {
-                var input = ParseInput(testCase.Input);
-                var result = ExecuteAlgorithm(input);
+                var inputs = ParseInputBasedOnFormat(testCase.Input, _exercise.InputFormat);
+                var result = ExecuteAlgorithm(inputs);
                 var resultStr = FormatOutput(result);
 
                 bool passed = resultStr == testCase.Expected;
@@ -111,7 +110,7 @@ public class ExerciseRunner : IExerciseRunner
 
                 if (!passed)
                 {
-                    Console.WriteLine($"     ❌ Test failed - arrays don't match");
+                    Console.WriteLine($"     ❌ Test failed - result doesn't match expected");
                 }
             }
             catch (Exception ex)
@@ -139,51 +138,88 @@ public class ExerciseRunner : IExerciseRunner
         Console.WriteLine();
     }
 
-    private void DemonstrateAlgorithm()
-    {
-        if (_compiledMethod == null)
-        {
-            Console.WriteLine("❌ Algorithm not compiled - cannot demonstrate");
-            return;
-        }
-
-        Console.WriteLine("🔧 Algorithm Demonstration:");
-        var demo = new[] { 5, 2, 4, 6, 1, 3 };
-        Console.WriteLine($"Input: [{string.Join(", ", demo)}]");
-
-        var result = ExecuteAlgorithm(demo);
-        Console.WriteLine($"Output: [{string.Join(", ", result)}]");
-        Console.WriteLine();
-
-        // For now, just show input/output. Later we can add step-by-step visualization
-        Console.WriteLine("💡 Step-by-step visualization coming in future updates!");
-    }
-
     private void CompileAlgorithm()
     {
         var code = _exercise.MySolution?.Implementation;
         _compiledMethod = _compilationService.CompileAlgorithm(_exercise.Title, code ?? string.Empty);
     }
 
-    private List<int> ExecuteAlgorithm(int[] input)
+    private object[] ParseInputBasedOnFormat(string input, string inputFormat)
+    {
+        // Default behavior: single array parameter (maintains backward compatibility)
+        if (string.IsNullOrEmpty(inputFormat))
+        {
+            return new object[] { ParseInput(input) };
+        }
+
+        // Handle specific input formats
+        switch (inputFormat.ToLowerInvariant())
+        {
+            case "array, target":
+                return ParseArrayAndTarget(input);
+
+            case "array, target, flag":
+                return ParseArrayTargetAndFlag(input);
+
+            // Add more formats as needed
+            default:
+                throw new NotSupportedException($"InputFormat '{inputFormat}' is not supported. " +
+                    "Supported formats: 'array, target', 'array, target, flag'");
+        }
+    }
+
+    private object[] ParseArrayAndTarget(string input)
+    {
+        // Expected format: "[1, 2, 3], 5"
+        var lastCommaIndex = input.LastIndexOf(", ");
+        if (lastCommaIndex == -1)
+            throw new FormatException($"Expected format: '[array], target' but got: {input}");
+
+        var arrayPart = input.Substring(0, lastCommaIndex).Trim();
+        var targetPart = input.Substring(lastCommaIndex + 2).Trim();
+
+        var array = ParseInput(arrayPart);
+        var target = int.Parse(targetPart);
+
+        return new object[] { array, target };
+    }
+
+    private object[] ParseArrayTargetAndFlag(string input)
+    {
+        // Expected format: "[1, 2, 3], 5, true"
+        var parts = input.Split(", ");
+        if (parts.Length != 3)
+            throw new FormatException($"Expected format: '[array], target, flag' but got: {input}");
+
+        var array = ParseInput(parts[0].Trim());
+        var target = int.Parse(parts[1].Trim());
+        var flag = bool.Parse(parts[2].Trim());
+
+        return new object[] { array, target, flag };
+    }
+
+    private object ExecuteAlgorithm(object[] inputs)
     {
         if (_compiledMethod == null)
             throw new InvalidOperationException("Algorithm not compiled");
 
         try
         {
-            // Get the method's parameter type
+            // Get the method's parameters
             var parameters = _compiledMethod.GetParameters();
-            if (parameters.Length != 1)
-                throw new InvalidOperationException("Algorithm method must have exactly one parameter");
 
-            var parameterType = parameters[0].ParameterType;
+            if (parameters.Length != inputs.Length)
+                throw new InvalidOperationException($"Algorithm method expects {parameters.Length} parameter(s), but {inputs.Length} input(s) provided");
 
-            // Convert input to the expected parameter type
-            object methodInput = ConvertToParameterType(input, parameterType);
+            // Convert inputs to the expected parameter types
+            var methodInputs = new object[parameters.Length];
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                methodInputs[i] = ConvertToParameterType(inputs[i], parameters[i].ParameterType);
+            }
 
             // Execute the method
-            var result = _compiledMethod.Invoke(null, new[] { methodInput });
+            var result = _compiledMethod.Invoke(null, methodInputs);
 
             // Handle different return types
             return result switch
@@ -191,7 +227,9 @@ public class ExerciseRunner : IExerciseRunner
                 List<int> list => list,
                 int[] array => array.ToList(),
                 IEnumerable<int> enumerable => enumerable.ToList(),
-                _ => throw new InvalidOperationException($"Unexpected return type: {result?.GetType()}")
+                int intResult => intResult,
+                bool boolResult => boolResult,
+                _ => result ?? throw new InvalidOperationException("Method returned null")
             };
         }
         catch (Exception ex)
@@ -201,35 +239,36 @@ public class ExerciseRunner : IExerciseRunner
         }
     }
 
-    private static object ConvertToParameterType(int[] input, Type parameterType)
+    private static object ConvertToParameterType(object input, Type parameterType)
     {
-        // Handle the most common parameter types
-        if (parameterType == typeof(int[]))
+        // Handle array/list conversions
+        if (input is int[] intArray)
         {
+            if (parameterType == typeof(int[]))
+                return intArray;
+            else if (parameterType == typeof(List<int>))
+                return intArray.ToList();
+            else if (parameterType == typeof(IList<int>))
+                return intArray.ToList();
+            else if (parameterType == typeof(IEnumerable<int>))
+                return intArray.AsEnumerable();
+            else if (parameterType == typeof(ICollection<int>))
+                return intArray.ToList();
+        }
+
+        // Handle direct type matches
+        if (parameterType.IsAssignableFrom(input.GetType()))
             return input;
-        }
-        else if (parameterType == typeof(List<int>))
-        {
-            return input.ToList();
-        }
-        else if (parameterType == typeof(IList<int>))
-        {
-            return input.ToList();
-        }
-        else if (parameterType == typeof(IEnumerable<int>))
-        {
-            return input.AsEnumerable();
-        }
-        else if (parameterType == typeof(ICollection<int>))
-        {
-            return input.ToList();
-        }
-        else
-        {
-            throw new InvalidOperationException(
-                $"Unsupported parameter type: {parameterType.Name}. " +
-                $"Supported types: int[], List<int>, IList<int>, IEnumerable<int>, ICollection<int>");
-        }
+
+        // Handle primitive conversions
+        if (parameterType == typeof(int) && input is int)
+            return input;
+
+        if (parameterType == typeof(bool) && input is bool)
+            return input;
+
+        throw new InvalidOperationException(
+            $"Cannot convert input type {input.GetType().Name} to parameter type {parameterType.Name}");
     }
 
     private int[] ParseInput(string input)
@@ -245,8 +284,15 @@ public class ExerciseRunner : IExerciseRunner
                       .ToArray();
     }
 
-    private string FormatOutput(List<int> result)
+    private string FormatOutput(object result)
     {
-        return $"[{string.Join(", ", result)}]";
+        return result switch
+        {
+            List<int> list => $"[{string.Join(", ", list)}]",
+            int[] array => $"[{string.Join(", ", array)}]",
+            int intResult => intResult.ToString(),
+            bool boolResult => boolResult.ToString().ToLower(),
+            _ => result?.ToString() ?? "null"
+        };
     }
 }

@@ -123,20 +123,49 @@ namespace AlgoMonsterComplete.Core
                 return null;
             }
 
-            // Find the method - look for common method names
-            var method = algorithmType.GetMethod("Sort")
-                       ?? algorithmType.GetMethod("Execute")
-                       ?? algorithmType.GetMethod("Run")
+            // Enhanced method discovery - look for common algorithm method names and return types
+            var method = algorithmType.GetMethod("Sort")              // Sorting algorithms
+                       ?? algorithmType.GetMethod("Execute")          // Generic execution
+                       ?? algorithmType.GetMethod("Run")              // Generic execution
+                       ?? algorithmType.GetMethod("BinarySearch")     // Search algorithms
+                       ?? algorithmType.GetMethod("Search")           // Search algorithms
+                       ?? algorithmType.GetMethod("Find")             // Search algorithms
                        ?? algorithmType.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                           .FirstOrDefault(m => m.ReturnType == typeof(List<int>) || m.ReturnType == typeof(int[]));
+                           .FirstOrDefault(m => IsValidAlgorithmMethod(m));
 
             if (method == null)
             {
-                _logger.LogError("Could not find suitable method in compiled algorithm");
+                var availableMethods = algorithmType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .Where(m => m.DeclaringType == algorithmType)
+                    .Select(m => $"{m.Name}({string.Join(", ", m.GetParameters().Select(p => p.ParameterType.Name))})")
+                    .ToList();
+
+                _logger.LogError("Could not find suitable method in compiled algorithm. Available methods: {Methods}",
+                    string.Join(", ", availableMethods));
                 return null;
             }
 
             return method;
+        }
+
+        private static bool IsValidAlgorithmMethod(MethodInfo method)
+        {
+            // Skip methods that aren't user-defined (like ToString, GetHashCode, etc.)
+            if (method.DeclaringType != method.ReflectedType)
+                return false;
+
+            var returnType = method.ReturnType;
+
+            // Valid return types for algorithms
+            return returnType == typeof(List<int>)           // Sorting algorithms
+                || returnType == typeof(int[])               // Sorting algorithms  
+                || returnType == typeof(IEnumerable<int>)    // Sorting algorithms
+                || returnType == typeof(int)                 // Search algorithms (index)
+                || returnType == typeof(bool)                // Boolean search algorithms
+                || returnType == typeof(string)              // String algorithms
+                || returnType == typeof(List<string>)        // String list algorithms
+                || returnType == typeof(double)              // Numeric algorithms
+                || returnType == typeof(void);               // In-place algorithms
         }
     }
 }

@@ -1,0 +1,119 @@
+Title: "Vanilla Binary Search"
+Description: "Find target element in sorted array using logarithmic divide-and-conquer search"
+Pattern: "binary-search"
+AlgoMonsterReference: "https://algo.monster/problems/binary_search_intro"
+InputFormat: "array, target"
+
+MySolution:
+  ComplexityAnalysis:
+    Time: "O(log n)"
+    Space: "O(1)"
+    Stable: true
+    InPlace: true
+  
+  Implementation: |
+    public static int BinarySearch(List<int> arr, int target)
+    {
+        // WRITE YOUR BRILLIANT CODE HERE
+        int leftIndex = 0, rightIndex = arr.Count - 1;
+        
+        while (leftIndex <= rightIndex)
+        {
+            int midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+            
+            if (arr[midIndex] == target)
+            {
+                return midIndex;
+            }
+            else if (arr[midIndex] > target)
+            {
+                rightIndex = midIndex - 1;
+            }
+            else
+            {
+                leftIndex = midIndex + 1;
+            }
+        }
+        return -1;
+    }
+
+TestCases:
+  - Input: "[1, 3, 5, 7, 9, 11], 5"
+    Expected: "2"
+    Notes: "Target found in middle of array"
+  
+  - Input: "[1, 3, 5, 7, 9, 11], 1"
+    Expected: "0"
+    Notes: "Target found at beginning of array"
+  
+  - Input: "[1, 3, 5, 7, 9, 11], 11"
+    Expected: "5"
+    Notes: "Target found at end of array"
+  
+  - Input: "[1, 3, 5, 7, 9, 11], 7"
+    Expected: "3"
+    Notes: "Target found in left half of array"
+  
+  - Input: "[1, 3, 5, 7, 9, 11], 9"
+    Expected: "4"
+    Notes: "Target found in right half of array"
+  
+  - Input: "[1, 3, 5, 7, 9, 11], 4"
+    Expected: "-1"
+    Notes: "Target not found - between existing elements"
+  
+  - Input: "[1, 3, 5, 7, 9, 11], 0"
+    Expected: "-1"
+    Notes: "Target not found - smaller than all elements"
+  
+  - Input: "[1, 3, 5, 7, 9, 11], 15"
+    Expected: "-1"
+    Notes: "Target not found - larger than all elements"
+  
+  - Input: "[42], 42"
+    Expected: "0"
+    Notes: "Single element array - target found"
+  
+  - Input: "[42], 10"
+    Expected: "-1"
+    Notes: "Single element array - target not found"
+  
+  - Input: "[], 5"
+    Expected: "-1"
+    Notes: "Empty array - target not found"
+  
+  - Input: "[1, 2, 3, 4], 3"
+    Expected: "2"
+    Notes: "Even length array - target found"
+  
+  - Input: "[1, 2, 3, 4, 5], 3"
+    Expected: "2"
+    Notes: "Odd length array - target found"
+  
+  - Input: "[1, 2, 3, 4], 2"
+    Expected: "1"
+    Notes: "Even length array - target in first half"
+  
+  - Input: "[1, 2, 3, 4, 5], 4"
+    Expected: "3"
+    Notes: "Odd length array - target in second half"
+  
+  - Input: "[1, 1, 1, 2, 2, 2], 2"
+    Expected: "3"
+    Notes: "Array with duplicates - finds any valid occurrence"
+  
+  - Input: "[10, 20, 30, 40, 50, 60, 70, 80, 90, 100], 30"
+    Expected: "2"
+    Notes: "Larger array - target found early"
+  
+  - Input: "[10, 20, 30, 40, 50, 60, 70, 80, 90, 100], 80"
+    Expected: "7"
+    Notes: "Larger array - target found late"
+  
+  - Input: "[-10, -5, -1, 0, 3, 7], -5"
+    Expected: "1"
+    Notes: "Array with negative numbers - target found"
+  
+  - Input: "[-10, -5, -1, 0, 3, 7], 0"
+    Expected: "3"
+    Notes: "Array with negative numbers - zero target"
