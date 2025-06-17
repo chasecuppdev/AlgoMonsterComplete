@@ -169,7 +169,7 @@ public class ExerciseRunner : IExerciseRunner
     private object[] ParseInputBasedOnFormat(string input, string inputFormat)
     {
         // Default behavior: single array parameter (maintains backward compatibility)
-        if (string.IsNullOrEmpty(inputFormat))
+        if (string.IsNullOrEmpty(inputFormat) || inputFormat.Equals("array", StringComparison.OrdinalIgnoreCase))
         {
             return new object[] { ParseInput(input) };
         }
@@ -186,7 +186,7 @@ public class ExerciseRunner : IExerciseRunner
             // Add more formats as needed
             default:
                 throw new NotSupportedException($"InputFormat '{inputFormat}' is not supported. " +
-                    "Supported formats: 'array, target', 'array, target, flag'");
+                    "Supported formats: 'array', 'array, target', 'array, target, flag'");
         }
     }
 
@@ -247,8 +247,11 @@ public class ExerciseRunner : IExerciseRunner
             return result switch
             {
                 List<int> list => list,
+                List<bool> boolList => boolList,
                 int[] array => array.ToList(),
+                bool[] boolArray => boolArray.ToList(),
                 IEnumerable<int> enumerable => enumerable.ToList(),
+                IEnumerable<bool> boolEnumerable => boolEnumerable.ToList(),
                 int intResult => intResult,
                 bool boolResult => boolResult,
                 _ => result ?? throw new InvalidOperationException("Method returned null")
@@ -263,7 +266,7 @@ public class ExerciseRunner : IExerciseRunner
 
     private static object ConvertToParameterType(object input, Type parameterType)
     {
-        // Handle array/list conversions
+        // Handle integer array/list conversions
         if (input is int[] intArray)
         {
             if (parameterType == typeof(int[]))
@@ -278,6 +281,21 @@ public class ExerciseRunner : IExerciseRunner
                 return intArray.ToList();
         }
 
+        // Handle boolean array/list conversions
+        if (input is bool[] boolArray)
+        {
+            if (parameterType == typeof(bool[]))
+                return boolArray;
+            else if (parameterType == typeof(List<bool>))
+                return boolArray.ToList();
+            else if (parameterType == typeof(IList<bool>))
+                return boolArray.ToList();
+            else if (parameterType == typeof(IEnumerable<bool>))
+                return boolArray.AsEnumerable();
+            else if (parameterType == typeof(ICollection<bool>))
+                return boolArray.ToList();
+        }
+
         // Handle direct type matches
         if (parameterType.IsAssignableFrom(input.GetType()))
             return input;
@@ -289,21 +307,60 @@ public class ExerciseRunner : IExerciseRunner
         if (parameterType == typeof(bool) && input is bool)
             return input;
 
+        // Special case: Try to convert between int[] and bool[] based on parameter type
+        // This handles cases where empty array detection might pick wrong type
+        if (input is int[] intArr && intArr.Length == 0)
+        {
+            if (parameterType == typeof(List<bool>) || parameterType == typeof(bool[]) ||
+                parameterType == typeof(IEnumerable<bool>) || parameterType == typeof(ICollection<bool>))
+            {
+                // Convert empty int array to empty bool array
+                var emptyBoolArray = new bool[0];
+                return ConvertToParameterType(emptyBoolArray, parameterType);
+            }
+        }
+
         throw new InvalidOperationException(
             $"Cannot convert input type {input.GetType().Name} to parameter type {parameterType.Name}");
     }
 
-    private int[] ParseInput(string input)
+    private object ParseInput(string input)
     {
         var trimmed = input.Trim('[', ']');
 
-        // Handle empty array case
+        // Handle empty array case - need to determine type from method signature
         if (string.IsNullOrWhiteSpace(trimmed))
-            return Array.Empty<int>();
+        {
+            // Check if the method expects bool array/list
+            if (_compiledMethod != null)
+            {
+                var firstParam = _compiledMethod.GetParameters().FirstOrDefault();
+                if (firstParam != null)
+                {
+                    var paramType = firstParam.ParameterType;
+                    if (paramType == typeof(List<bool>) || paramType == typeof(bool[]) ||
+                        paramType == typeof(IEnumerable<bool>) || paramType == typeof(ICollection<bool>))
+                    {
+                        return new bool[0];
+                    }
+                }
+            }
 
-        return trimmed.Split(',')
-                      .Select(s => int.Parse(s.Trim()))
-                      .ToArray();
+            // Default to int array for backward compatibility
+            return new int[0];
+        }
+
+        var elements = trimmed.Split(',').Select(s => s.Trim()).ToArray();
+
+        // Detect if this is a boolean array
+        if (elements.All(e => e.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                              e.Equals("false", StringComparison.OrdinalIgnoreCase)))
+        {
+            return elements.Select(e => bool.Parse(e)).ToArray();
+        }
+
+        // Default to integer array parsing
+        return elements.Select(s => int.Parse(s)).ToArray();
     }
 
     private string FormatOutput(object result)
