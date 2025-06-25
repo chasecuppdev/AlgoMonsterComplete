@@ -1,0 +1,117 @@
+Title: "First Element Not Smaller Than Target"
+Description: "Find the first element that is greater than or equal to the target in a sorted array"
+Pattern: "binary-search"
+AlgoMonsterReference: "https://algo.monster/problems/binary_search_boundary"
+InputFormat: "array, target"
+
+MySolution:
+  ComplexityAnalysis:
+    Time: "O(log n)"
+    Space: "O(1)"
+    Stable: true
+    InPlace: true
+  
+  Implementation: |
+    public static int FirstNotSmaller(List<int> arr, int target)
+    {
+        // WRITE YOUR BRILLIANT CODE HERE
+        int left = 0, right = arr.Count - 1;
+        int boundaryIndex = -1;
+        
+        while (left <= right)
+        {
+            int overflowSafeMid = left + (right - left) / 2;
+            
+            if (arr[overflowSafeMid] >= target)
+            {
+                boundaryIndex = overflowSafeMid;
+                right = overflowSafeMid - 1;
+            }
+            else
+            {
+                left = overflowSafeMid + 1;
+            }
+        }
+        return boundaryIndex;
+    }
+
+TestCases:
+  - Input: "[1, 3, 3, 5, 8, 8, 10], 3"
+    Expected: "1"
+    Notes: "Target exists - first occurrence in array with duplicates"
+  
+  - Input: "[1, 3, 3, 5, 8, 8, 10], 4"
+    Expected: "3"
+    Notes: "Target doesn't exist - first element larger than target"
+  
+  - Input: "[1, 3, 3, 5, 8, 8, 10], 1"
+    Expected: "0"
+    Notes: "Target equals first element"
+  
+  - Input: "[1, 3, 3, 5, 8, 8, 10], 10"
+    Expected: "6"
+    Notes: "Target equals last element"
+  
+  - Input: "[1, 3, 3, 5, 8, 8, 10], 0"
+    Expected: "0"
+    Notes: "Target smaller than all elements - return first index"
+  
+  - Input: "[1, 3, 3, 5, 8, 8, 10], 15"
+    Expected: "-1"
+    Notes: "Target larger than all elements - no valid answer"
+  
+  - Input: "[42], 42"
+    Expected: "0"
+    Notes: "Single element - target equals element"
+  
+  - Input: "[42], 30"
+    Expected: "0"
+    Notes: "Single element - target smaller than element"
+  
+  - Input: "[42], 50"
+    Expected: "-1"
+    Notes: "Single element - target larger than element"
+  
+  - Input: "[], 5"
+    Expected: "-1"
+    Notes: "Empty array - no elements to compare"
+  
+  - Input: "[2, 2, 2, 2, 2], 2"
+    Expected: "0"
+    Notes: "All elements equal to target - return first index"
+  
+  - Input: "[2, 2, 2, 2, 2], 1"
+    Expected: "0"
+    Notes: "All elements larger than target - return first index"
+  
+  - Input: "[2, 2, 2, 2, 2], 3"
+    Expected: "-1"
+    Notes: "All elements smaller than target - no valid answer"
+  
+  - Input: "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 5"
+    Expected: "4"
+    Notes: "Sequential array - target in middle"
+  
+  - Input: "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 1"
+    Expected: "0"
+    Notes: "Sequential array - target at beginning"
+  
+  - Input: "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 10"
+    Expected: "9"
+    Notes: "Sequential array - target at end"
+  
+  - Input: "[-10, -5, -1, 0, 3, 7], -1"
+    Expected: "2"
+    Notes: "Array with negative numbers - target equals element"
+  
+  - Input: "[-10, -5, -1, 0, 3, 7], -3"
+    Expected: "2"
+    Notes: "Array with negative numbers - target between elements"
+  
+  - Input: "[-10, -5, -1, 0, 3, 7], -15"
+    Expected: "0"
+    Notes: "Array with negative numbers - target smaller than all"
+  
+  - Input: "[-10, -5, -1, 0, 3, 7], 10"
+    Expected: "-1"
+    Notes: "Array with negative numbers - target larger than all"
