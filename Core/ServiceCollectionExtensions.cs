@@ -37,16 +37,19 @@ public static class ServiceCollectionExtensions
             return;
         }
 
-        var yamlFiles = Directory.GetFiles("Patterns", "*.yml", SearchOption.AllDirectories);
+        // Support both .yml and .yaml extensions
+        var ymlFiles = Directory.GetFiles("Patterns", "*.yml", SearchOption.AllDirectories);
+        var yamlFiles = Directory.GetFiles("Patterns", "*.yaml", SearchOption.AllDirectories);
+        var allYamlFiles = ymlFiles.Concat(yamlFiles).ToArray();
 
-        if (!yamlFiles.Any())
+        if (!allYamlFiles.Any())
         {
             Console.WriteLine("⚠️ No YAML files found in Patterns directory");
             return;
         }
 
         int registeredCount = 0;
-        foreach (var yamlFile in yamlFiles)
+        foreach (var yamlFile in allYamlFiles)
         {
             var pathParts = yamlFile.Split(Path.DirectorySeparatorChar);
             if (pathParts.Length < 2) continue;
